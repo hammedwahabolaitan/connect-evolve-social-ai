@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -28,7 +27,7 @@ export const usePosts = () => {
 
   const fetchPosts = async () => {
     try {
-      // First fetch posts with profiles
+      // First fetch posts
       const { data: postsData, error: postsError } = await supabase
         .from('posts')
         .select(`
@@ -39,16 +38,23 @@ export const usePosts = () => {
           comments_count,
           shares_count,
           created_at,
-          user_id,
-          profiles!posts_user_id_fkey (
-            full_name,
-            username,
-            avatar_url
-          )
+          user_id
         `)
         .order('created_at', { ascending: false });
 
       if (postsError) throw postsError;
+
+      // Fetch profiles for all post authors
+      const userIds = postsData?.map(post => post.user_id) || [];
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, full_name, username, avatar_url')
+        .in('id', userIds);
+
+      // Create a map of profiles by user_id
+      const profilesMap = new Map(
+        profilesData?.map(profile => [profile.id, profile]) || []
+      );
 
       // Fetch likes for current user if logged in
       let userLikes: string[] = [];
@@ -61,8 +67,8 @@ export const usePosts = () => {
         userLikes = likesData?.map(like => like.post_id) || [];
       }
 
-      // Transform the data to match our Post interface
-      const postsWithLikes = postsData?.map(post => ({
+      // Combine the data
+      const postsWithProfiles = postsData?.map(post => ({
         id: post.id,
         content: post.content,
         image_url: post.image_url,
@@ -70,11 +76,11 @@ export const usePosts = () => {
         comments_count: post.comments_count || 0,
         shares_count: post.shares_count || 0,
         created_at: post.created_at,
-        profiles: post.profiles,
+        profiles: profilesMap.get(post.user_id) || null,
         user_likes: userLikes.includes(post.id),
       })) || [];
 
-      setPosts(postsWithLikes);
+      setPosts(postsWithProfiles);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast({
