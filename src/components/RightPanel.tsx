@@ -2,8 +2,11 @@
 import React from 'react';
 import { Calendar, Users, TrendingUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 
 const RightPanel = () => {
+  const { toast } = useToast();
+
   const onlineUsers = [
     { name: 'Alice Cooper', status: 'online', avatar: 'AC' },
     { name: 'Bob Wilson', status: 'online', avatar: 'BW' },
@@ -23,6 +26,34 @@ const RightPanel = () => {
     { metric: 'Content Reach', value: '2.3k', trend: 'up' },
   ];
 
+  const handleUserClick = (userName: string) => {
+    toast({
+      title: "User Profile",
+      description: `Opening ${userName}'s profile...`,
+    });
+  };
+
+  const handleEventClick = (eventTitle: string) => {
+    toast({
+      title: "Event Details",
+      description: `Opening ${eventTitle} details...`,
+    });
+  };
+
+  const handleInsightClick = (metric: string) => {
+    toast({
+      title: "AI Insight",
+      description: `Detailed analytics for ${metric}`,
+    });
+  };
+
+  const handleRecommendationClick = (type: string) => {
+    toast({
+      title: "AI Recommendation",
+      description: `Opening ${type} recommendations...`,
+    });
+  };
+
   return (
     <div className="w-80 space-y-6">
       {/* AI Insights */}
@@ -33,13 +64,17 @@ const RightPanel = () => {
         </h3>
         <div className="space-y-3">
           {aiInsights.map((insight, index) => (
-            <div key={index} className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+            <button 
+              key={index} 
+              onClick={() => handleInsightClick(insight.metric)}
+              className="w-full flex items-center justify-between p-2 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+            >
               <span className="text-sm text-gray-700">{insight.metric}</span>
               <div className="flex items-center space-x-1">
                 <span className="text-sm font-semibold text-green-600">{insight.value}</span>
                 <TrendingUp className="w-3 h-3 text-green-600" />
               </div>
-            </div>
+            </button>
           ))}
         </div>
         <p className="text-xs text-gray-500 mt-3">
@@ -55,7 +90,11 @@ const RightPanel = () => {
         </h3>
         <div className="space-y-3">
           {onlineUsers.map((user, index) => (
-            <div key={index} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
+            <button 
+              key={index} 
+              onClick={() => handleUserClick(user.name)}
+              className="w-full flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+            >
               <div className="relative">
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-xs">
                   {user.avatar}
@@ -64,11 +103,11 @@ const RightPanel = () => {
                   user.status === 'online' ? 'bg-green-500' : 'bg-yellow-500'
                 }`}></div>
               </div>
-              <div className="flex-1">
+              <div className="flex-1 text-left">
                 <p className="text-sm font-medium text-gray-800">{user.name}</p>
                 <p className="text-xs text-gray-500 capitalize">{user.status}</p>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </Card>
@@ -81,11 +120,15 @@ const RightPanel = () => {
         </h3>
         <div className="space-y-4">
           {upcomingEvents.map((event, index) => (
-            <div key={index} className="border-l-4 border-purple-500 pl-3">
+            <button 
+              key={index} 
+              onClick={() => handleEventClick(event.title)}
+              className="w-full text-left border-l-4 border-purple-500 pl-3 hover:bg-gray-50 p-2 rounded-r-lg transition-colors"
+            >
               <p className="font-medium text-gray-800 text-sm">{event.title}</p>
               <p className="text-xs text-gray-500">{event.date}</p>
               <p className="text-xs text-purple-600">{event.attendees} attending</p>
-            </div>
+            </button>
           ))}
         </div>
       </Card>
@@ -94,15 +137,24 @@ const RightPanel = () => {
       <Card className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
         <h3 className="font-semibold mb-3 text-gray-800">AI Recommendations</h3>
         <div className="space-y-2">
-          <div className="text-sm text-gray-700">
+          <button 
+            onClick={() => handleRecommendationClick('AI researchers')}
+            className="w-full text-left text-sm text-gray-700 hover:text-blue-600 transition-colors"
+          >
             <span className="font-medium">Connect with:</span> 3 AI researchers in your network
-          </div>
-          <div className="text-sm text-gray-700">
+          </button>
+          <button 
+            onClick={() => handleRecommendationClick('ML Discussion Group')}
+            className="w-full text-left text-sm text-gray-700 hover:text-blue-600 transition-colors"
+          >
             <span className="font-medium">Join:</span> Machine Learning Discussion Group
-          </div>
-          <div className="text-sm text-gray-700">
+          </button>
+          <button 
+            onClick={() => handleRecommendationClick('#TechInnovation')}
+            className="w-full text-left text-sm text-gray-700 hover:text-blue-600 transition-colors"
+          >
             <span className="font-medium">Follow:</span> #TechInnovation trending topic
-          </div>
+          </button>
         </div>
       </Card>
     </div>
