@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Share, MoreHorizontal, Globe, ThumbsUp, Angry, Laugh, Sad } from 'lucide-react';
+import { Heart, MessageCircle, Share, MoreHorizontal, Globe, ThumbsUp, Angry, Laugh, Frown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -109,7 +108,7 @@ const Post: React.FC<PostProps> = ({
     { icon: ThumbsUp, label: 'Like', color: 'text-blue-600' },
     { icon: Heart, label: 'Love', color: 'text-red-500' },
     { icon: Laugh, label: 'Haha', color: 'text-yellow-500' },
-    { icon: Sad, label: 'Sad', color: 'text-blue-400' },
+    { icon: Frown, label: 'Sad', color: 'text-blue-400' },
     { icon: Angry, label: 'Angry', color: 'text-red-600' },
   ];
 
