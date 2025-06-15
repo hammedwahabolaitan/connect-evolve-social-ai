@@ -28,15 +28,27 @@ export const usePosts = () => {
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
+      // First fetch posts with profiles
+      const { data: postsData, error: postsError } = await supabase
         .from('posts')
         .select(`
-          *,
-          profiles (full_name, username, avatar_url)
+          id,
+          content,
+          image_url,
+          likes_count,
+          comments_count,
+          shares_count,
+          created_at,
+          user_id,
+          profiles!posts_user_id_fkey (
+            full_name,
+            username,
+            avatar_url
+          )
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (postsError) throw postsError;
 
       // Fetch likes for current user if logged in
       let userLikes: string[] = [];
@@ -49,12 +61,17 @@ export const usePosts = () => {
         userLikes = likesData?.map(like => like.post_id) || [];
       }
 
-      const postsWithLikes = data?.map(post => ({
-        ...post,
-        user_likes: userLikes.includes(post.id),
+      // Transform the data to match our Post interface
+      const postsWithLikes = postsData?.map(post => ({
+        id: post.id,
+        content: post.content,
+        image_url: post.image_url,
         likes_count: post.likes_count || 0,
         comments_count: post.comments_count || 0,
         shares_count: post.shares_count || 0,
+        created_at: post.created_at,
+        profiles: post.profiles,
+        user_likes: userLikes.includes(post.id),
       })) || [];
 
       setPosts(postsWithLikes);
