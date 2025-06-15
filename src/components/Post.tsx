@@ -9,16 +9,16 @@ import { usePosts } from '@/hooks/usePosts';
 interface PostProps {
   id: string;
   content: string;
-  image_url?: string;
-  likes_count: number;
-  comments_count: number;
-  shares_count: number;
-  created_at: string;
+  image_url?: string | null;
+  likes_count: number | null;
+  comments_count: number | null;
+  shares_count: number | null;
+  created_at: string | null;
   profiles: {
-    full_name: string;
-    username?: string;
-    avatar_url?: string;
-  };
+    full_name: string | null;
+    username?: string | null;
+    avatar_url?: string | null;
+  } | null;
   user_likes: boolean;
 }
 
@@ -36,7 +36,9 @@ const Post: React.FC<PostProps> = ({
   const { toast } = useToast();
   const { toggleLike } = usePosts();
 
-  const formatTimeAgo = (dateString: string) => {
+  const formatTimeAgo = (dateString: string | null) => {
+    if (!dateString) return 'Unknown time';
+    
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
@@ -73,15 +75,19 @@ const Post: React.FC<PostProps> = ({
   };
 
   const handleAuthorClick = () => {
+    const authorName = profiles?.full_name || 'Unknown User';
     toast({
       title: "Profile",
-      description: `Opening ${profiles.full_name}'s profile...`,
+      description: `Opening ${authorName}'s profile...`,
     });
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null) => {
+    if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
+
+  const authorName = profiles?.full_name || 'Unknown User';
 
   return (
     <Card className="mb-4 hover:shadow-lg transition-shadow">
@@ -92,14 +98,14 @@ const Post: React.FC<PostProps> = ({
           className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
         >
           <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
-            {profiles.avatar_url ? (
-              <img src={profiles.avatar_url} alt={profiles.full_name} className="w-full h-full rounded-full object-cover" />
+            {profiles?.avatar_url ? (
+              <img src={profiles.avatar_url} alt={authorName} className="w-full h-full rounded-full object-cover" />
             ) : (
-              getInitials(profiles.full_name)
+              getInitials(authorName)
             )}
           </div>
           <div>
-            <p className="font-semibold text-gray-800">{profiles.full_name}</p>
+            <p className="font-semibold text-gray-800">{authorName}</p>
             <p className="text-sm text-gray-500">{formatTimeAgo(created_at)}</p>
           </div>
         </button>
@@ -138,22 +144,22 @@ const Post: React.FC<PostProps> = ({
         <div className="flex items-center justify-between text-sm text-gray-500">
           <button 
             className="hover:underline"
-            onClick={() => toast({ title: "Likes", description: `${likes_count} people liked this post` })}
+            onClick={() => toast({ title: "Likes", description: `${likes_count || 0} people liked this post` })}
           >
-            {likes_count} likes
+            {likes_count || 0} likes
           </button>
           <div className="flex space-x-4">
             <button 
               className="hover:underline"
               onClick={handleComment}
             >
-              {comments_count} comments
+              {comments_count || 0} comments
             </button>
             <button 
               className="hover:underline"
               onClick={handleShare}
             >
-              {shares_count} shares
+              {shares_count || 0} shares
             </button>
           </div>
         </div>

@@ -7,16 +7,16 @@ import { useToast } from '@/hooks/use-toast';
 interface Post {
   id: string;
   content: string;
-  image_url?: string;
-  likes_count: number;
-  comments_count: number;
-  shares_count: number;
-  created_at: string;
+  image_url?: string | null;
+  likes_count: number | null;
+  comments_count: number | null;
+  shares_count: number | null;
+  created_at: string | null;
   profiles: {
-    full_name: string;
-    username?: string;
-    avatar_url?: string;
-  };
+    full_name: string | null;
+    username?: string | null;
+    avatar_url?: string | null;
+  } | null;
   user_likes: boolean;
 }
 
@@ -32,16 +32,29 @@ export const usePosts = () => {
         .from('posts')
         .select(`
           *,
-          profiles (full_name, username, avatar_url),
-          likes!inner (user_id)
+          profiles (full_name, username, avatar_url)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
+      // Fetch likes for current user if logged in
+      let userLikes: string[] = [];
+      if (user) {
+        const { data: likesData } = await supabase
+          .from('likes')
+          .select('post_id')
+          .eq('user_id', user.id);
+        
+        userLikes = likesData?.map(like => like.post_id) || [];
+      }
+
       const postsWithLikes = data?.map(post => ({
         ...post,
-        user_likes: post.likes?.some((like: any) => like.user_id === user?.id) || false,
+        user_likes: userLikes.includes(post.id),
+        likes_count: post.likes_count || 0,
+        comments_count: post.comments_count || 0,
+        shares_count: post.shares_count || 0,
       })) || [];
 
       setPosts(postsWithLikes);
