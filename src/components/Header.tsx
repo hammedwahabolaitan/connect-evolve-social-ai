@@ -1,12 +1,14 @@
 
 import React from 'react';
-import { Bell, MessageSquare, Users, Search, Settings, User } from 'lucide-react';
+import { Bell, MessageSquare, Users, Search, Settings, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 const Header = () => {
   const { toast } = useToast();
+  const { user, signOut } = useAuth();
 
   const handleNotificationClick = () => {
     toast({
@@ -40,6 +42,14 @@ const Header = () => {
     toast({
       title: "Profile",
       description: "Opening your profile...",
+    });
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You have been successfully signed out",
     });
   };
 
@@ -121,8 +131,26 @@ const Header = () => {
               className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
               onClick={handleProfileClick}
             >
-              <User className="w-4 h-4 text-white" />
+              {user?.user_metadata?.avatar_url ? (
+                <img 
+                  src={user.user_metadata.avatar_url} 
+                  alt="Profile" 
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <span className="text-white text-sm font-medium">
+                  {user?.user_metadata?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+                </span>
+              )}
             </button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hover:bg-red-50"
+              onClick={handleSignOut}
+            >
+              <LogOut className="w-4 h-4 text-gray-600" />
+            </Button>
           </div>
         </div>
       </div>

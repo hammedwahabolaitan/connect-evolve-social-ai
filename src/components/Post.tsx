@@ -1,42 +1,54 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Heart, MessageCircle, Share, MoreHorizontal } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { usePosts } from '@/hooks/usePosts';
 
 interface PostProps {
-  author: string;
-  avatar: string;
-  timeAgo: string;
+  id: string;
   content: string;
-  image?: string;
-  likes: number;
-  comments: number;
-  shares: number;
+  image_url?: string;
+  likes_count: number;
+  comments_count: number;
+  shares_count: number;
+  created_at: string;
+  profiles: {
+    full_name: string;
+    username?: string;
+    avatar_url?: string;
+  };
+  user_likes: boolean;
 }
 
 const Post: React.FC<PostProps> = ({ 
-  author, 
-  avatar, 
-  timeAgo, 
-  content, 
-  image, 
-  likes, 
-  comments, 
-  shares 
+  id,
+  content,
+  image_url,
+  likes_count,
+  comments_count,
+  shares_count,
+  created_at,
+  profiles,
+  user_likes
 }) => {
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(likes);
   const { toast } = useToast();
+  const { toggleLike } = usePosts();
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays}d ago`;
+  };
 
   const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-    toast({
-      title: isLiked ? "Post Unliked" : "Post Liked",
-      description: isLiked ? "Removed from liked posts" : "Added to liked posts",
-    });
+    toggleLike(id);
   };
 
   const handleComment = () => {
@@ -63,8 +75,12 @@ const Post: React.FC<PostProps> = ({
   const handleAuthorClick = () => {
     toast({
       title: "Profile",
-      description: `Opening ${author}'s profile...`,
+      description: `Opening ${profiles.full_name}'s profile...`,
     });
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
 
   return (
@@ -76,11 +92,15 @@ const Post: React.FC<PostProps> = ({
           className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
         >
           <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
-            {avatar}
+            {profiles.avatar_url ? (
+              <img src={profiles.avatar_url} alt={profiles.full_name} className="w-full h-full rounded-full object-cover" />
+            ) : (
+              getInitials(profiles.full_name)
+            )}
           </div>
           <div>
-            <p className="font-semibold text-gray-800">{author}</p>
-            <p className="text-sm text-gray-500">{timeAgo}</p>
+            <p className="font-semibold text-gray-800">{profiles.full_name}</p>
+            <p className="text-sm text-gray-500">{formatTimeAgo(created_at)}</p>
           </div>
         </button>
         <Button variant="ghost" size="icon" onClick={handleMoreOptions}>
@@ -94,10 +114,10 @@ const Post: React.FC<PostProps> = ({
       </div>
 
       {/* Post Image */}
-      {image && (
+      {image_url && (
         <div className="px-4 pb-3">
           <img 
-            src={image} 
+            src={image_url} 
             alt="Post content" 
             className="w-full rounded-lg object-cover max-h-96 cursor-pointer hover:opacity-95 transition-opacity"
             onClick={() => toast({ title: "Image", description: "Full-screen view coming soon!" })}
@@ -118,22 +138,22 @@ const Post: React.FC<PostProps> = ({
         <div className="flex items-center justify-between text-sm text-gray-500">
           <button 
             className="hover:underline"
-            onClick={() => toast({ title: "Likes", description: `${likeCount} people liked this post` })}
+            onClick={() => toast({ title: "Likes", description: `${likes_count} people liked this post` })}
           >
-            {likeCount} likes
+            {likes_count} likes
           </button>
           <div className="flex space-x-4">
             <button 
               className="hover:underline"
               onClick={handleComment}
             >
-              {comments} comments
+              {comments_count} comments
             </button>
             <button 
               className="hover:underline"
               onClick={handleShare}
             >
-              {shares} shares
+              {shares_count} shares
             </button>
           </div>
         </div>
@@ -144,10 +164,10 @@ const Post: React.FC<PostProps> = ({
         <div className="flex items-center justify-around">
           <Button 
             variant="ghost" 
-            className={`flex items-center space-x-2 hover:bg-red-50 ${isLiked ? 'text-red-500' : 'text-gray-600'}`}
+            className={`flex items-center space-x-2 hover:bg-red-50 ${user_likes ? 'text-red-500' : 'text-gray-600'}`}
             onClick={handleLike}
           >
-            <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
+            <Heart className={`w-5 h-5 ${user_likes ? 'fill-current' : ''}`} />
             <span>Like</span>
           </Button>
           <Button variant="ghost" className="flex items-center space-x-2 hover:bg-blue-50 text-gray-600" onClick={handleComment}>

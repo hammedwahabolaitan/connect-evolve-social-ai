@@ -4,35 +4,33 @@ import { Image, Video, Calendar, MapPin, Smile } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { usePosts } from '@/hooks/usePosts';
 
 const PostCreator = () => {
   const [postContent, setPostContent] = useState('');
-  const { toast } = useToast();
+  const { user } = useAuth();
+  const { createPost } = usePosts();
 
-  const handlePost = () => {
+  const handlePost = async () => {
     if (postContent.trim()) {
-      console.log('Creating post:', postContent);
-      toast({
-        title: "Post Created",
-        description: "Your post has been shared successfully!",
-      });
+      await createPost(postContent.trim());
       setPostContent('');
     }
   };
 
   const handleMediaClick = (type: string) => {
-    toast({
-      title: `Add ${type}`,
-      description: `${type} upload feature coming soon!`,
-    });
+    // TODO: Implement media upload functionality
+    console.log(`${type} upload coming soon!`);
   };
+
+  if (!user) return null;
 
   return (
     <Card className="p-4 mb-6">
       <div className="flex space-x-3">
         <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">
-          You
+          {user.user_metadata?.full_name?.[0] || user.email?.[0]?.toUpperCase() || 'U'}
         </div>
         <div className="flex-1">
           <Textarea
